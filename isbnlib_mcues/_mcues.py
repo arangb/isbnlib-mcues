@@ -1,26 +1,28 @@
 # -*- coding: utf-8 -*-
-"""Query the http://www.mcu.es/webISBN/tituloSimpleFilter.do service for
+"""Query the http://www.mcu.es/webISBN service for
 Spanish ISBN database metadata."""
 
 import logging
 import re
 from isbnlib.dev import stdmeta
 from isbnlib.dev._bouth23 import u
+from isbnlib.dev.webquery import query as wquery
 
 UA = 'isbnlib (gzip)'
-SERVICE_URL = 'http://www.mcu.es/webISBN/tituloSimpleFilter.do?cache=init&prev_layout=busquedaisbn&layout=busquedaisbn&language=es'
+SERVICE_URL = 'http://www.mcu.es/webISBN/tituloSimpleDispatch.do?cache=init&prev_layout=busquedaisbn&layout=busquedaisbn&language=es&params.cisbnExt={isbn}&action=Buscar'
 LOGGER = logging.getLogger(__name__)
 
 
 def parser_mcues(data):
-    """Parse the response from the MCU service. The data will be an array with
-    each line as a string of the output webpage"""
+    """Parse the response from the MCU service. The input data is the result webpage in html from the search."""
+    data = data.decode('latin-1').encode("utf-8")  # Lots of accents in Spanish!
+    data = re.split('\n', data)  # split into lines for loop
     recs = {}
-    recs['Authors'] = [] # this should be an array, otherwise stdmeta gives a NotValidMetadataError
+    recs['Authors'] = []  # this should be an array, otherwise stdmeta gives a NotValidMetadataError
     try:
         for line in data:
             line = line.replace('\n', ' ')  # remove carriage return
-            if len(recs) == 4: # skip the rest of the file if we have all recs
+            if len(recs) == 4:  # skip the rest of the file if we have all recs
                 break
             # Author:
             #                     <strong>Garc<ED>a M<E1>rquez, Gabriel (1928- )</strong>
@@ -66,35 +68,10 @@ def _mapper(isbn, records):
 
 
 def query(isbn):
-    """Query the Spanish MCU service for metadata. This service is not an API,
-    it doesn't return a JSON or xml that we can easily parse. We need to
-    submit the ISBN in a form on the website and then parse the resulting
-    webpage. I could not make it work just using urllib and urllib2, so I need
-    to use the module mechanicalsoup that works in Python2 and 3.
-    To install: sudo pip install mechanicalsoup"""
-    import mechanicalsoup
-    browser = mechanicalsoup.StatefulBrowser()
-    browser.open(SERVICE_URL)
-    # Fill-in the search form
-    browser.select_form('#libroBusquedaSimpleForm')
-    browser["params.cisbnExt"] = isbn
-    browser.submit_selected()
-    # Check we got back a correct webpage: Any "Aviso importante" means there was an error with that ISBN.
-    if browser.get_current_page().findAll(
-            text=re.compile('Aviso importante')):
-        #'no es un ISBN válido. Acuda a la ayuda para observar los formatos válidos'):  # pragma: no cover
-        #'No se ha encontrado ningún resultado. Modifique los parámetros para ampliar el campo de búsqueda.'
-        LOGGER.debug('No data from Spanish MCU for isbn %s', isbn)
+    """Query the Spanish MCU service for metadata. """
+    data = wquery(
+        SERVICE_URL.format(isbn=isbn), user_agent=UA, parser=parser_mcues)
+    if not data:  # pragma: no cover
+        LOGGER.debug('No data from MCU for isbn %s', isbn)
         return {}
-
-    # Could use the BeautifulSoup methods to parse the output faster?
-    #print browser.get_current_page().select_one("a[tabindex=106]") # Authors
-    #print browser.get_current_page().select_one("a[href*=editorialDetalle]") # Publishers
-
-    response_web = str(browser.get_current_page())  # just get raw text (things like &nbsp; will be lost)
-    result_lines = re.split(
-        '\n',
-        response_web)  # ok, now we have a list of each line in the webpage
-    recs = parser_mcues(result_lines)  # send it to the parser
-
-    return _mapper(isbn, recs)
+    return _mapper(isbn, data)
