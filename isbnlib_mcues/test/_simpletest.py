@@ -5,7 +5,7 @@
 
 from nose.tools import assert_equals
 import isbnlib
-from _mcues import query
+from .._mcues import query
 
 def test_mcu():
 	

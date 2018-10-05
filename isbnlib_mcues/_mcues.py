@@ -7,7 +7,6 @@ import re
 from isbnlib.dev import stdmeta
 from isbnlib.dev._bouth23 import u
 from ._mcueswebservice import query as wquery
-#from isbnlib.dev.webquery import query as wquery
 
 UA = 'isbnlib (gzip)'
 SERVICE_URL = 'http://www.mcu.es/webISBN/tituloSimpleDispatch.do?cache=init&prev_layout=busquedaisbn&layout=busquedaisbn&language=es&params.cisbnExt={isbn}&action=Buscar'
@@ -16,7 +15,6 @@ LOGGER = logging.getLogger(__name__)
 
 def parser_mcues(data):
     """Parse the response from the MCU service. The input data is the result webpage in html from the search."""
-    #data = data.decode('latin-1').encode("utf-8")  # Lots of accents in Spanish!
     data = re.split('\n', data)  # split into lines for loop
     recs = {}
     recs['Authors'] = []  # this should be an array, otherwise stdmeta gives a NotValidMetadataError
@@ -52,6 +50,11 @@ def parser_mcues(data):
 
     except IndexError:
         LOGGER.debug('Check the parsing for Spanish MCU (possible error!)')
+    try:
+        if not recs['Title'] and not recs['Authors']:
+            recs = {}
+    except KeyError:
+        recs = {}
     return recs
 
 
