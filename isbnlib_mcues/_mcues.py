@@ -53,6 +53,7 @@ def parser_mcues(data):
     except IndexError:
         LOGGER.debug('Check the parsing for Spanish MCU (possible error!)')
     try:
+        # delete almost empty records
         if not recs['Title'] and not recs['Authors']:
             recs = {}
     except KeyError:
@@ -76,7 +77,6 @@ def _mapper(isbn, records):
 def query(isbn):
     """Query the Spanish MCU service for metadata. """
     data = parser_mcues(wquery(SERVICE_URL.format(isbn=isbn), user_agent=UA))
-    #data = wquery(SERVICE_URL.format(isbn=isbn), user_agent=UA, parser=parser_mcues)
     if not data:  # pragma: no cover
         LOGGER.debug('No data from MCU for isbn %s', isbn)
         return {}
