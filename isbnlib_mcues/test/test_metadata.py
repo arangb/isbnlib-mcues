@@ -19,10 +19,3 @@ def test_query():
 
     assert_equals(len(repr(query('9780000000'))) == 2, True)
 
-
-# def test_ext_meta():
-#    """Test the query of metadata (mcu.es) with 'high level' meta function."""
-#    # test meta from core
-#    assert_equals(len(repr(meta('9789727576807', 'porbase'))) > 100, True)
-
-test_query()
