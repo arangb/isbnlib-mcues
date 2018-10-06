@@ -36,8 +36,7 @@ class McuesWEBService(WEBService):
             buf = bstream(data)
             f = gzip.GzipFile(fileobj=buf)
             data = f.read()
-        return s(data.decode('iso-8859-1').encode(
-            'utf-8'))  # From Headers charset=ISO-8859-1
+        return s(data.decode('iso-8859-1').encode('utf-8'))
 
 
 def query(url, user_agent=UA):
