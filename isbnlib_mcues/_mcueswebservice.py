@@ -6,7 +6,6 @@ import logging
 from time import sleep, time as timestamp
 
 from isbnlib.dev._bouth23 import bstream, s
-
 from isbnlib.dev.webservice import WEBService
 
 UA = 'isbnlib (gzip)'
@@ -21,6 +20,7 @@ class McuesWEBService(WEBService):
     T = 0.0  # seconds
 
     def __init__(self, url, user_agent=UA):
+        """Initialize and throttle the service."""
         last = McuesWEBService.T
         wait = 0 if timestamp() - last > THROTTLING else THROTTLING
         sleep(wait)
