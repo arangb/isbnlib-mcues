@@ -17,7 +17,8 @@ def parser_mcues(data):
     """Parse the response from the MCU service. The input data is the result webpage in html from the search."""
     data = re.split('\n', data)  # split into lines for loop
     recs = {}
-    recs['Authors'] = []  # this should be an array, otherwise stdmeta gives a NotValidMetadataError
+    recs['Authors'] = [
+    ]  # this should be an array, otherwise stdmeta gives a NotValidMetadataError
     try:
         for line in data:
             line = line.replace('\n', ' ')  # remove carriage return
@@ -27,7 +28,8 @@ def parser_mcues(data):
             #                     <strong>Garc<ED>a M<E1>rquez, Gabriel (1928- )</strong>
             elif re.search(r"\s{10}<strong>.+</strong>", line):
                 authors = re.findall('>.+<', line)[0]
-                authors = u(authors.replace('>', '').replace('<', '').split('(')[0])
+                authors = u(
+                    authors.replace('>', '').replace('<', '').split('(')[0])
                 recs['Authors'].append(authors)
             # Publisher:
             #<a href="/webISBN/editorialDetalle.do?sidEditorial=2399&amp;action=busquedaInicial&amp;noValidating=true&amp;POS=0&amp;MAX=50&amp;TOTAL=0&amp;prev_layout=busquedaisbn&amp;layout=busquedaeditoriales&amp;language=es" tabindex="107">Ediciones C<E1>tedra, S.A.</a>

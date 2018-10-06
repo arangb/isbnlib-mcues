@@ -18,4 +18,3 @@ def test_query():
     assert_equals(len(repr(query('9788474234046'))) > 100, True)
 
     assert_equals(len(repr(query('9780000000'))) == 2, True)
-
