@@ -6,7 +6,7 @@ import logging
 import re
 from isbnlib.dev import stdmeta
 from isbnlib.dev._bouth23 import u
-from isbnlib.dev.webquery import query as wquery
+from ._mcueswebservice import query as wquery
 
 UA = 'isbnlib (gzip)'
 SERVICE_URL = 'http://www.mcu.es/webISBN/tituloSimpleDispatch.do?cache=init&prev_layout=busquedaisbn&layout=busquedaisbn&language=es&params.cisbnExt={isbn}&action=Buscar'
@@ -15,10 +15,10 @@ LOGGER = logging.getLogger(__name__)
 
 def parser_mcues(data):
     """Parse the response from the MCU service. The input data is the result webpage in html from the search."""
-    data = data.decode('latin-1').encode("utf-8")  # Lots of accents in Spanish!
     data = re.split('\n', data)  # split into lines for loop
     recs = {}
-    recs['Authors'] = []  # this should be an array, otherwise stdmeta gives a NotValidMetadataError
+    recs['Authors'] = [
+    ]  # this should be an array, otherwise stdmeta gives a NotValidMetadataError
     try:
         for line in data:
             line = line.replace('\n', ' ')  # remove carriage return
@@ -28,7 +28,8 @@ def parser_mcues(data):
             #                     <strong>Garc<ED>a M<E1>rquez, Gabriel (1928- )</strong>
             elif re.search(r"\s{10}<strong>.+</strong>", line):
                 authors = re.findall('>.+<', line)[0]
-                authors = u(authors.replace('>', '').replace('<', ''))
+                authors = u(
+                    authors.replace('>', '').replace('<', '').split('(')[0])
                 recs['Authors'].append(authors)
             # Publisher:
             #<a href="/webISBN/editorialDetalle.do?sidEditorial=2399&amp;action=busquedaInicial&amp;noValidating=true&amp;POS=0&amp;MAX=50&amp;TOTAL=0&amp;prev_layout=busquedaisbn&amp;layout=busquedaeditoriales&amp;language=es" tabindex="107">Ediciones C<E1>tedra, S.A.</a>
@@ -51,6 +52,12 @@ def parser_mcues(data):
 
     except IndexError:
         LOGGER.debug('Check the parsing for Spanish MCU (possible error!)')
+    try:
+        # delete almost empty records
+        if not recs['Title'] and not recs['Authors']:
+            recs = {}
+    except KeyError:
+        recs = {}
     return recs
 
 
@@ -69,8 +76,7 @@ def _mapper(isbn, records):
 
 def query(isbn):
     """Query the Spanish MCU service for metadata. """
-    data = wquery(
-        SERVICE_URL.format(isbn=isbn), user_agent=UA, parser=parser_mcues)
+    data = parser_mcues(wquery(SERVICE_URL.format(isbn=isbn), user_agent=UA))
     if not data:  # pragma: no cover
         LOGGER.debug('No data from MCU for isbn %s', isbn)
         return {}
