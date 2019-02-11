@@ -32,7 +32,7 @@ setup(
     entry_points={'isbnlib.metadata': ['mcues=isbnlib_mcues:query']},
     install_requires=["isbnlib>=3.9.3,<3.10.0"],
     license='LGPL v3',
-    description='A plugin for isbnlib that pulls metadata from Ministerio de Cultura (Spain) http://www.mcu.es/webISBN/tituloSimpleFilter.do?cache=init&prev_layout=busquedaisbn&layout=busquedaisbn&language=es.',
+    description='A plugin for isbnlib that pulls metadata from Ministerio de Cultura (Spain).',
     long_description=open('README.rst').read(),
     keywords='ISBN isbnlib mcues bibliographic-references',
     classifiers=[
