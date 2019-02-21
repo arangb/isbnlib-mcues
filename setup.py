@@ -27,7 +27,7 @@ setup(
     author='arangb',
     author_email='arangbellido@gmail.com',
     url='https://github.com/arangb/isbnlib-mcues',
-    download_url='https://github.com/arangb/isbnlib-mcues/archive/v0.0.1.zip',
+    download_url='https://github.com/arangb/isbnlib-mcues/archive/v0.0.2.zip',
     packages=['isbnlib_mcues/'],
     entry_points={'isbnlib.metadata': ['mcues=isbnlib_mcues:query']},
     install_requires=["isbnlib>=3.9.3,<3.10.0"],
