@@ -1,0 +1,42 @@
+sudo: false
+language: python
+branches:
+    only:
+    - dev
+    - v0.1.3
+matrix:
+    include:
+    - os: osx
+      language: generic
+      env: TOXENV=py36
+    - python: "2.7"
+      env: TOXENV=py27
+    - python: "3.6"
+      env: TOXENV=py36
+    - python: "3.5"
+      env: TOXENV=py35
+    - python: "nightly"
+      env: TOXENV=nightly
+    - python: "3.5"
+      env: TOXENV=checkers
+    allow_failures:
+    - env: TOXENV=nightly
+install:
+- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then pip3 install tox; fi
+- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then pip3 install -r requirements.txt; fi
+- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then pip install tox; fi
+- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then pip install -r requirements.txt; fi
+- if [[ $TOXENV == 'checkers' ]]; then pip install -r requirements.txt; fi
+- if [[ $TOXENV == 'checkers' ]]; then pip install flake8; fi
+- if [[ $TOXENV == 'checkers' ]]; then pip install pep8-naming; fi
+- if [[ $TOXENV == 'py35' ]]; then pip install coveralls; fi
+- if [[ $TRAVIS_PULL_REQUEST != 'false' ]]; then pip install yapf; fi
+script:
+- if [[ $TRAVIS_PULL_REQUEST != 'false' ]] && [[ $TOXENV == 'checkers' ]]; then yapf -i isbnlib_porbase; fi
+- if [[ ! -z $TOXENV ]]; then tox -e $TOXENV; fi
+after_success:
+- if [[ $TOXENV == 'py35' ]]; then coveralls; fi
+notifications:
+  email:
+    on_success: never
+    on_failure: always
