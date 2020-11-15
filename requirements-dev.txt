@@ -1,4 +1,4 @@
-isbnlib>=3.9.3,<3.10.0
+isbnlib>=3.9.3,<3.11.0
 coverage==4.4.2
 flake8==3.5.0
 flake8-import-order==0.16
